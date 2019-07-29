@@ -75,7 +75,7 @@ redoxH2: :class;'bool'
         ax.tick_params(axis='x',rotation=45)
 
         ax.set_ylabel('E / V')
-        ax.set_xlabel('Molecule number')
+        ax.set_xlabel(self.xlabels)
         sns.set()
         sns.set_style('white')
 

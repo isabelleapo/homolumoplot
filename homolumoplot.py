@@ -1,6 +1,7 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 class HOMOLUMOPlot:
 
@@ -58,10 +59,10 @@ redoxH2: :class;'bool'
         self.redoxH2 = redoxH2
 
     def plot(self):
-        data = self._load_data()
-        self._plot(data)
+        data, ip_maxval, ea_maxval = self._load_data()
+        self._plot(data, ip_maxval, ea_maxval)
 
-    def _plot(self, data):
+    def _plot(self, data, ip_maxval, ea_maxval):
         fig, ax = plt.subplots(figsize=self.figsize)
 
 
@@ -70,8 +71,8 @@ redoxH2: :class;'bool'
         mol_number = data[self.xlabels]
 
 
-        ax.bar(mol_number, homo_values, bottom=5, align='center', color=self.homo_colour)
-        ax.bar(mol_number, lumo_values, bottom=-5, align='center', color=self.lumo_colour)
+        ax.bar(mol_number, homo_values, bottom=ip_maxval, align='center', color=self.homo_colour)
+        ax.bar(mol_number, lumo_values, bottom=-ea_maxval, align='center', color=self.lumo_colour)
         ax.tick_params(axis='x',rotation=45)
 
         ax.set_ylabel('E / V')
@@ -97,11 +98,36 @@ redoxH2: :class;'bool'
 
     def _load_data(self):
         data = pd.read_excel(self.data_path)
-        data['newIP'] = -5 - data['IP']*-1
-        data['newEA'] = 5 - data['EA']*-1
+        if any(data['EA'] < 0):
+            ipmaxval = data['IP'].abs().max()
+            eamaxval = data['EA'].abs().max()
+            if ipmaxval > 0.5 or eamaxval > 0.5:
+                if ipmaxval > eamaxval:
+                    ip_maxval = np.ceil(ipmaxval)
+                    ea_maxval = np.ceil(ipmaxval)
+                    if ipmaxval < eamaxval:
+                        ip_maxval = np.ceil(eamaxval)
+                        ea_maxval = np.ceil(eamaxval)
+                    elif ipmaxval == eamaxval:
+                        ip_maxval = np.ceil(ipmaxval)
+                        ea_maxval = np.ceil(ipmaxval)
+            elif ipmaxval <= 0.5 or eamaxval <= 0.5:
+                ip_maxval = np.ceil((ipmaxval+0.1)*100)/100
+                ea_maxval = np.ceil((eamaxval+0.1)*100)/100
+            data['newIP'] = -ip_maxval - data['IP']*-1
+            data['newEA'] = ea_maxval - data['EA']*-1
+        elif any(data['EA'] < 0) == False:
+            ea_maxval = 0
+            ipmaxval = data['IP'].abs().max()
+            if ipmaxval > 0.5:
+                    ip_maxval = np.ceil(ipmaxval)
+            elif ipmaxval <= 0.5:
+                ip_maxval = np.ceil((ipmaxval+0.1)*100)/100
+            data['newIP'] = -ip_maxval - data['IP']*-1
+            data['newEA'] = ea_maxval - data['EA']*-1
         try:
             data = data.sort_values(self.xlabels)
         except Exception as e:
             pass
         data[self.xlabels] = data[self.xlabels].astype(str)
-        return data
+        return data, ip_maxval, ea_maxval

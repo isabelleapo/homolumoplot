@@ -105,12 +105,12 @@ redoxH2: :class;'bool'
                 if ipmaxval > eamaxval:
                     ip_maxval = np.ceil(ipmaxval)
                     ea_maxval = np.ceil(ipmaxval)
-                    if ipmaxval < eamaxval:
-                        ip_maxval = np.ceil(eamaxval)
-                        ea_maxval = np.ceil(eamaxval)
-                    elif ipmaxval == eamaxval:
-                        ip_maxval = np.ceil(ipmaxval)
-                        ea_maxval = np.ceil(ipmaxval)
+                if ipmaxval < eamaxval:
+                    ip_maxval = np.ceil(eamaxval)
+                    ea_maxval = np.ceil(eamaxval)
+                elif ipmaxval == eamaxval:
+                    ip_maxval = np.ceil(ipmaxval)
+                    ea_maxval = np.ceil(ipmaxval)
             elif ipmaxval <= 0.5 or eamaxval <= 0.5:
                 ip_maxval = np.ceil((ipmaxval+0.1)*100)/100
                 ea_maxval = np.ceil((eamaxval+0.1)*100)/100
